@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Athena - Sistema de Gestión de Biblioteca</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- App Container -->
+  <div id="app" class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-logo">
+          <i data-lucide="book-open"></i>
+        </div>
+        <span class="brand-name">Athena</span>
+      </div>
+      
+      <nav class="sidebar-menu">
+        <a href="#" class="menu-item active" data-tab="books">
+          <i data-lucide="library"></i>
+          <span>Libros</span>
+        </a>
+        <a href="#" class="menu-item student-only" data-tab="my-loans">
+          <i data-lucide="bookmark"></i>
+          <span>Mis Préstamos</span>
+        </a>
+        <a href="#" class="menu-item admin-only" data-tab="admin-loans">
+          <i data-lucide="history"></i>
+          <span>Todos los Préstamos</span>
+        </a>
+        <a href="#" class="menu-item admin-only" data-tab="admin-users">
+          <i data-lucide="users"></i>
+          <span>Usuarios</span>
+        </a>
+        <a href="/api-docs" target="_blank" class="menu-item">
+          <i data-lucide="file-code"></i>
+          <span>Documentación API</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer / Profile -->
+      <div class="sidebar-footer">
+        <div class="user-profile-card">
+          <div class="user-avatar" id="user-avatar-initials">U</div>
+          <div class="user-info">
+            <span class="user-name" id="user-display-name">Invitado</span>
+            <span class="user-role" id="user-display-role">Estudiante</span>
+          </div>
+          <button class="logout-btn" id="logout-button" title="Cerrar sesión">
+            <i data-lucide="log-out"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Top header bar -->
+      <header class="top-header">
+        <div class="header-search">
+          <i data-lucide="search" class="search-icon"></i>
+          <input type="text" id="search-input" placeholder="Buscar por título, autor o categoría...">
+        </div>
+        <div class="header-actions">
+          <span class="badge" id="api-status-badge">
+            <span class="status-dot online"></span> API Activa
+          </span>
+          <button class="btn btn-primary admin-only" id="btn-new-book">
+            <i data-lucide="plus"></i>
+            <span>Nuevo Libro</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Dynamic Tab Contents -->
+      <div class="content-body">
+        
+        <!-- Tab: Books Catalogue -->
+        <section id="tab-books" class="tab-pane active">
+          <div class="section-header">
+            <div>
+              <h1 class="section-title">Catálogo de Libros</h1>
+              <p class="section-desc">Explora los libros disponibles en nuestra biblioteca, fíltralos por categoría o realiza búsquedas rápidas.</p>
+            </div>
+            <!-- Category Chips Filter -->
+            <div class="category-filters" id="category-filters-container">
+              <button class="category-chip active" data-category="all">Todos</button>
+              <button class="category-chip" data-category="Programación">Programación</button>
+              <button class="category-chip" data-category="Literatura">Literatura</button>
+              <button class="category-chip" data-category="Ciencia">Ciencia</button>
+            </div>
+          </div>
+
+          <!-- Books Grid -->
+          <div class="books-grid" id="books-grid-container">
+            <!-- Dynamic Book Cards will be loaded here -->
+            <div class="loader-container">
+              <div class="spinner"></div>
+              <p>Cargando catálogo...</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tab: My Loans (Student) -->
+        <section id="tab-my-loans" class="tab-pane">
+          <div class="section-header">
+            <h1 class="section-title">Mis Préstamos</h1>
+            <p class="section-desc">Historial y estado actual de los libros que has solicitado en préstamo.</p>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Libro</th>
+                  <th>Autor</th>
+                  <th>Fecha Préstamo</th>
+                  <th>Devolución Estimada</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="my-loans-table-body">
+                <!-- Dynamic Content -->
+              </tbody>
+            </table>
+            <div class="empty-state hidden" id="my-loans-empty">
+              <i data-lucide="inbox"></i>
+              <p>No tienes ningún préstamo solicitado aún.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tab: Admin Loans (Admin) -->
+        <section id="tab-admin-loans" class="tab-pane">
+          <div class="section-header">
+            <h1 class="section-title">Control de Préstamos</h1>
+            <p class="section-desc">Panel de administración para registrar devoluciones e inspeccionar todos los préstamos del sistema.</p>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Usuario</th>
+                  <th>Libro</th>
+                  <th>Fecha Préstamo</th>
+                  <th>Devolución Estimada</th>
+                  <th>Estado</th>
+                  <th class="actions-col">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="admin-loans-table-body">
+                <!-- Dynamic Content -->
+              </tbody>
+            </table>
+            <div class="empty-state hidden" id="admin-loans-empty">
+              <i data-lucide="inbox"></i>
+              <p>No hay préstamos registrados en el sistema.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tab: Admin Users (Admin) -->
+        <section id="tab-admin-users" class="tab-pane">
+          <div class="section-header">
+            <h1 class="section-title">Control de Usuarios</h1>
+            <p class="section-desc">Visualiza la lista de usuarios registrados en el sistema y su rol asignado.</p>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre</th>
+                  <th>Email</th>
+                  <th>Rol</th>
+                  <th>Fecha de Registro</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-table-body">
+                <!-- Dynamic Content -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- AUTH PORTAL OVERLAY (Shown if not authenticated) -->
+  <div id="auth-overlay" class="auth-overlay hidden">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-logo">
+          <i data-lucide="book-open"></i>
+        </div>
+        <h2 class="auth-title">Bienvenido a Athena</h2>
+        <p class="auth-subtitle">Inicia sesión o crea una cuenta para acceder a la biblioteca</p>
+      </div>
+
+      <!-- Tabs for Login / Register -->
+      <div class="auth-tabs">
+        <button class="auth-tab-btn active" id="auth-tab-login">Iniciar Sesión</button>
+        <button class="auth-tab-btn" id="auth-tab-register">Registrarse</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" class="auth-form">
+        <div class="form-group">
+          <label for="login-email">Correo Electrónico</label>
+          <div class="input-icon-wrapper">
+            <i data-lucide="mail"></i>
+            <input type="email" id="login-email" required placeholder="tu@email.com">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="login-password">Contraseña</label>
+          <div class="input-icon-wrapper">
+            <i data-lucide="lock"></i>
+            <input type="password" id="login-password" required placeholder="••••••••">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">
+          <span>Ingresar</span>
+          <i data-lucide="arrow-right"></i>
+        </button>
+        <div class="auth-helper">
+          <p>Credenciales demo de administración:</p>
+          <code>admin@library.com</code> / <code>password123</code>
+        </div>
+      </form>
+
+      <!-- Register Form (Hidden by default) -->
+      <form id="register-form" class="auth-form hidden">
+        <div class="form-group">
+          <label for="register-name">Nombre Completo</label>
+          <div class="input-icon-wrapper">
+            <i data-lucide="user"></i>
+            <input type="text" id="register-name" required placeholder="Ej. Juan Pérez">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="register-email">Correo Electrónico</label>
+          <div class="input-icon-wrapper">
+            <i data-lucide="mail"></i>
+            <input type="email" id="register-email" required placeholder="tu@email.com">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="register-password">Contraseña</label>
+          <div class="input-icon-wrapper">
+            <i data-lucide="lock"></i>
+            <input type="password" id="register-password" required minlength="6" placeholder="Mínimo 6 caracteres">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="register-role">Rol de Usuario</label>
+          <div class="input-icon-wrapper">
+            <i data-lucide="shield"></i>
+            <select id="register-role" required>
+              <option value="STUDENT" selected>Estudiante</option>
+              <option value="ADMIN">Administrador</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">
+          <span>Registrarse</span>
+          <i data-lucide="user-plus"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- BOOK MODAL (Create/Edit Book) -->
+  <div id="book-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="book-modal-title">Agregar Nuevo Libro</h3>
+        <button class="modal-close" id="book-modal-close-btn">&times;</button>
+      </div>
+      <form id="book-form">
+        <input type="hidden" id="book-form-id">
+        <div class="form-group">
+          <label for="book-title">Título</label>
+          <input type="text" id="book-title" required placeholder="Ej. Clean Code">
+        </div>
+        <div class="form-group">
+          <label for="book-author">Autor</label>
+          <input type="text" id="book-author" required placeholder="Ej. Robert C. Martin">
+        </div>
+        <div class="form-group">
+          <label for="book-category">Categoría</label>
+          <input type="text" id="book-category" required placeholder="Ej. Programación">
+        </div>
+        <div class="form-group">
+          <label for="book-stock">Cantidad en Stock</label>
+          <input type="number" id="book-stock" required min="0" value="1" placeholder="Ej. 5">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="book-modal-cancel-btn">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="book-modal-submit-btn">Guardar Libro</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- LOAN MODAL (Confirm Loan for Student) -->
+  <div id="loan-modal" class="modal-overlay hidden">
+    <div class="modal-card modal-card-sm">
+      <div class="modal-header">
+        <h3>Solicitar Préstamo</h3>
+        <button class="modal-close" id="loan-modal-close-btn">&times;</button>
+      </div>
+      <form id="loan-form">
+        <input type="hidden" id="loan-form-book-id">
+        <div class="loan-summary">
+          <i data-lucide="book" class="summary-icon"></i>
+          <div>
+            <h4 id="loan-summary-title">Clean Code</h4>
+            <p id="loan-summary-author">Robert C. Martin</p>
+          </div>
+        </div>
+        
+        <div class="form-group" style="margin-top: 1.5rem;">
+          <label for="loan-return-date">Fecha Estimada de Devolución</label>
+          <input type="date" id="loan-return-date" required>
+          <p class="form-help">Selecciona un día en el futuro para devolver el libro.</p>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="loan-modal-cancel-btn">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Confirmar Préstamo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Application JS Code -->
+  <script src="app.js"></script>
+</body>
+</html>
