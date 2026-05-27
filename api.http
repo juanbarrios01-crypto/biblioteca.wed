@@ -1,0 +1,58 @@
+### VARIABLES
+@baseUrl = http://localhost:3000/api
+@token = 
+
+### 1. REGISTER USER
+# @name register
+POST {{baseUrl}}/users/register
+Content-Type: application/json
+
+{
+  "email": "admin@library.com",
+  "password": "password123",
+  "name": "Administrador",
+  "role": "ADMIN"
+}
+
+### 2. LOGIN
+# @name login
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "email": "admin@library.com",
+  "password": "password123"
+}
+
+### 3. GET ALL USERS (Requires Token)
+GET {{baseUrl}}/users
+Authorization: Bearer {{login.response.body.token}}
+
+### 4. CREATE A BOOK (Requires Admin Token)
+POST {{baseUrl}}/books
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.token}}
+
+{
+  "title": "Clean Code",
+  "author": "Robert C. Martin",
+  "category": "Programación",
+  "stock": 5
+}
+
+### 5. GET ALL BOOKS
+GET {{baseUrl}}/books
+
+### 6. CREATE A LOAN (Requires Token)
+POST {{baseUrl}}/loans
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.token}}
+
+{
+  "bookId": 1,
+  "estimatedReturn": "2026-06-10T00:00:00.000Z"
+}
+
+### 7. GET MY LOANS
+GET {{baseUrl}}/loans/my-loans
+Authorization: Bearer {{login.response.body.token}}
